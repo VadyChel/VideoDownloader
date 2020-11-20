@@ -2,6 +2,7 @@ import os
 from threading import Thread
 from pytube import *
 from tkinter import *
+from tkinter.filedialog import *
 from tkinter.ttk import *
 
 class VideoDownloader:
@@ -10,6 +11,7 @@ class VideoDownloader:
 		self.progress = 0
 		self.current_stream = None
 		self.thread = None
+		self.save_directory = None
 
 		self.window.title("VideoDownloader")
 		self.window.iconbitmap(os.path.dirname(os.path.abspath(__file__))+"/resources/img/logo.ico")
@@ -72,9 +74,13 @@ class VideoDownloader:
 	def create_thread(self):
 		self.thread = Thread(target=self.download)
 		self.thread.start()
+
+	def set_save_directory(self):
+		self.save_directory = askdirectory()
 		
 	def download(self) -> None:
-		self.current_stream.download(filename=self.current_stream.title)
+		self.set_save_directory()
+		self.current_stream.download(filename=self.current_stream.title, output_path=self.save_directory)
 
 	def kill_thread(self):
 		self.thread.terminate()
