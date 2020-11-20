@@ -2,7 +2,7 @@ import os
 from threading import Thread
 from pytube import *
 from tkinter import *
-from tkinter.ttk import Combobox
+from tkinter.ttk import *
 
 class VideoDownloader:
 	def __init__(self, window):
@@ -10,26 +10,31 @@ class VideoDownloader:
 		self.progress = 0
 		self.current_stream = None
 		self.thread = None
+
 		self.window.title("VideoDownloader")
 		self.window.iconbitmap(os.path.dirname(os.path.abspath(__file__))+"/resources/img/logo.ico")
-		self.window.geometry("1200x700")
+		self.window.geometry("750x350")
 		self.window.resizable(width=False, height=False)
+
+		self.create_gui()
 
 	def show_progress_bar(self, stream:Stream, chunk:int, bytes_remaining:int) -> int:
 		new_progress = round(100-((bytes_remaining/stream.filesize_approx)*100))
-		self.progress = new_progress if new_progress != self.progress else self.progress
-		self.progress_text.configure(text=str(self.progress))
+		if new_progress != self.progress:
+			self.progress = new_progress
+			self.progress_text.configure(text=str(self.progress))
+			self.progress_bar["value"] = self.progress
 
 	def clicked(self):
-		yt = YouTube(self.url_sender.get())
-		yt.register_on_progress_callback(self.show_progress_bar)
+		self.yt = YouTube(self.url_sender.get())
+		self.yt.register_on_progress_callback(self.show_progress_bar)
 
 		self.search_btn.destroy()
 
 		self.combo = Combobox(self.window)
 		resolutions = sorted(list(set([
 				stream.resolution 
-				for stream in yt.streams.filter(
+				for stream in self.yt.streams.filter(
 					type="video")
 				])), 
 				key=lambda key: int(key[:-1]),
@@ -43,11 +48,17 @@ class VideoDownloader:
 		self.download_btn.grid(column=2, row=0)
 		self.stop_btn = Button(self.window, text="Остановить", command=self.kill_thread)  
 		self.stop_btn.grid(column=2, row=1)
+		self.progress_bar = Progressbar(
+			self.window, 
+			length=400, 
+			mode='determinate'
+		)
+		self.progress_bar.grid(column=0, row=2)
 		
 		self.progress_text = Label(self.window, text=str(self.progress))
 		self.progress_text.grid(column=1, row=1)
 
-		stream = yt.streams.filter(
+		stream = self.yt.streams.filter(
 			res=self.combo.get(), 
 			type="video").first()
 		self.current_stream = stream
