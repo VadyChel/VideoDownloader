@@ -1,5 +1,5 @@
 import os
-from threading import Thread
+from multiprocessing import Process
 from pytube import *
 from tkinter import *
 from tkinter.filedialog import *
@@ -48,6 +48,7 @@ class VideoDownloader:
 
 		self.download_btn = Button(self.window, text="Скачать!", command=self.create_thread)  
 		self.download_btn.grid(column=2, row=0)
+
 		self.stop_btn = Button(self.window, text="Остановить", command=self.kill_thread)  
 		self.stop_btn.grid(column=2, row=1)
 		self.progress_bar = Progressbar(
@@ -72,7 +73,10 @@ class VideoDownloader:
 		self.search_btn.grid(column=1, row=0)
 
 	def create_thread(self):
-		self.thread = Thread(target=self.download)
+		self.download_btn.destroy()
+		self.stop_btn.grid(column=2, row=0)
+
+		self.thread = Process(target=self.download)
 		self.thread.start()
 
 	def set_save_directory(self):
