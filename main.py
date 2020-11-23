@@ -1,5 +1,4 @@
 import os
-import sys
 import subprocess
 import requests
 from PIL import Image, ImageTk
@@ -14,6 +13,8 @@ class VideoDownloader:
 	def __init__(self, window):
 		self.window = window
 		self.progress = 0
+		self.video_downloading = False
+		self.audio_downloading = False
 		self.current_stream = None
 		self.current_video = None
 		self.current_audio = None
@@ -44,12 +45,6 @@ class VideoDownloader:
 			self.progress = new_progress
 			self.progress_text.configure(text=str(self.progress) + "%")
 			self.progress_bar["value"] = self.progress
-
-		if self.current_video is None:
-			self.create_audio_thread()
-		elif self.current_audio is None:
-			print("done")
-			self.connect_streams()
 
 	def clicked(self):
 		self.yt = YouTube(self.url_sender.get())
@@ -135,41 +130,53 @@ class VideoDownloader:
 		# label = Label(image=photo)
 		# label.pack()
 
-		self.create_video_thread()
+		self.create_streams_thread()
 
 	def set_save_directory(self):
 		self.save_directory = askdirectory()
 
 	def download_video(self) -> None:
+		self.current_stream = self.current_video
 		self.current_video.download(filename="Video", output_path=self.save_directory)
-		if self.progress >= 100:
-			print("done1")
-			self.current_video = None
+		print("done1")
 
 	def download_audio(self) -> None:
+		self.current_stream = self.current_audio
 		self.current_audio.download(filename="Audio", output_path=self.save_directory)
-		if self.progress >= 100:
-			print("done2")
-			self.current_audio = None
+		print("done2")
+		self.connect_streams()
 
 	def connect_streams(self) -> None:
-		video_path = self.save_directory + "/Video" + self.current_video.subtype
-		audio_path = self.save_directory + "/Audio" + self.current_audio.subtype
+		video_path = self.save_directory + "/Video." + self.current_video.subtype
+		audio_path = self.save_directory + "/Audio." + self.current_audio.subtype
+
 		subprocess.run(
-			f"""ffmpeg -i {video_path} -i {audio_path} -c copy "{self.current_stream.title}.mp4" """
+			f"""ffmpeg -i "{video_path}" -i "{audio_path}" -c copy "{self.current_video.title}.mp4" """
 		)
 		os.remove(video_path)
 		os.remove(audio_path)
 
-	def create_video_thread(self) -> None:
-		self.current_stream = self.current_video
-		self.thread = Thread(target=self.download_video)
+	def download_streams(self):
+		self.download_video()
+		self.download_audio()
+
+	def create_streams_thread(self) -> None:
+		self.video_downloading = True
+		self.audio_downloading = True
+		self.thread = Thread(target=self.download_streams)
 		self.thread.start()
 
-	def create_audio_thread(self) -> None:
-		self.current_stream = self.current_audio
-		self.thread = Thread(target=self.download_audio)
-		self.thread.start()
+	# def create_video_thread(self) -> None:
+	# 	self.video_downloading = True
+	# 	self.current_stream = self.current_video
+	# 	self.thread = Thread(target=self.download_video)
+	# 	self.thread.start()
+
+	# def create_audio_thread(self) -> None:
+	# 	self.audio_downloading = True
+	# 	self.current_stream = self.current_audio
+	# 	self.thread = Thread(target=self.download_audio)
+	# 	self.thread.start()
 
 	def kill_thread(self):
 		self.thread.terminate()
