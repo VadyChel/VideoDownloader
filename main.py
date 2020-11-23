@@ -1,6 +1,7 @@
 import os
 import re
 import time
+import datetime
 import ctypes
 import subprocess
 import requests
@@ -143,7 +144,7 @@ class VideoDownloader:
 		self.downloading_info = Label(self.window, text="Preparation...")
 		self.downloading_info.grid(column=2, row=1, padx=25, sticky=S)
 
-		self.stop_btn = Button(self.window, text="Stop", command=self.kill_thread)
+		self.stop_btn = Button(self.window, text="Stop", command=self.stop_download)
 		self.stop_btn.grid(column=4, row=0)
 		self.pause_btn = Button(self.window, text="Pause", command=self.kill_thread)
 		self.pause_btn.grid(column=5, row=0)
@@ -165,7 +166,7 @@ class VideoDownloader:
 		self.save_directory = askdirectory()
 
 	def download_video(self) -> None:
-		self.start_time = time.time()
+		self.start_time = datetime.datetime.now()
 		self.downloading_info.configure(text="Video upload")
 
 		self.current_stream = self.current_video
@@ -178,8 +179,12 @@ class VideoDownloader:
 		self.current_audio.download(filename="Audio", output_path=self.save_directory)
 
 		self.connect_streams()
-		self.finish_time = time.time()
-		self.downloading_info.configure(text=f"Uploaded in {str(self.finish_time - self.start_time)}")
+		self.finish_time = datetime.datetime.now()
+
+		seconds = (self.finish_time - self.start_time).seconds
+		uploading_time = str(round(seconds % 3600 / 60.0))+"m" if seconds % 3600 / 60.0 > 1 else str(round(seconds))+"s"
+
+		self.downloading_info.configure(text=f"Uploaded in {uploading_time}")
 
 	def connect_streams(self) -> None:
 		self.downloading_info.configure(text="Concatenating streams")
@@ -193,7 +198,6 @@ class VideoDownloader:
 		output_path = self.save_directory + f"/{video_title}.mp4"
 
 		command = f"""ffmpeg -i "{video_path}" -i "{audio_path}" -c copy "{output_path}" """
-		print(command)
 		subprocess.run(command)
 
 		os.remove(video_path)
@@ -208,7 +212,7 @@ class VideoDownloader:
 				self.progress_bar["value"] = 10
 
 			self.progress_bar["value"] += 10
-			time.sleep(0.5)
+			time.sleep(0.2)
 
 		self.progress_bar.configure(mode="determinate")
 		self.progress_bar["value"] = 100
@@ -221,6 +225,9 @@ class VideoDownloader:
 	def create_streams_thread(self) -> None:
 		self.thread = Thread(target=self.download_streams)
 		self.thread.start()
+
+	def stop_download():
+		self.stop_download = False
 
 	def kill_thread(self) -> None:
 		self.thread.terminate()
