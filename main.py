@@ -195,6 +195,17 @@ class VideoDownloader:
 		video_title = re.sub("[^\w\-_\. ]", "", self.current_video.title)
 		video_path = self.save_directory + "/Video." + self.current_video.subtype
 		audio_path = self.save_directory + "/Audio." + self.current_audio.subtype
+
+		for f in os.listdir(self.save_directory):
+			if list(f[:-4])[::-1][0] == ")":
+				num = int(list(f[:-4])[::-1][1])+1
+				video_title += f"""({num})"""
+				break
+			
+			if f == video_title+".mp4":
+				video_title += "(1)"
+				break
+
 		output_path = self.save_directory + f"/{video_title}.mp4"
 
 		command = f"""ffmpeg -i "{video_path}" -i "{audio_path}" -c copy "{output_path}" """
@@ -226,7 +237,7 @@ class VideoDownloader:
 		self.thread = Thread(target=self.download_streams)
 		self.thread.start()
 
-	def stop_download():
+	def stop_download(self):
 		self.stop_download = False
 
 	def kill_thread(self) -> None:
