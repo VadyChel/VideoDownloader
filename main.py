@@ -123,7 +123,7 @@ class VideoDownloader:
 		self.save_directory_text.place(x=360, y=70, width=275, height=30)
 
 		self.edit_save_path_btn = Button(
-			self.window, text="Edit", command=self.set_save_directory
+			self.window, text="Save As", command=self.set_save_directory
 		)
 		self.edit_save_path_btn.place(x=645, y=70, width=95, height=30)
 
@@ -355,6 +355,10 @@ class VideoDownloader:
 		self.stop_download = False
 
 	def remove_combos(self) -> None:
+		self.resolution_combo_info.destroy()
+		self.format_combo_info.destroy()
+		self.caption_combo_info.destroy()
+
 		self.resolution_combo.destroy()
 		self.format_combo.destroy()
 		self.caption_combo.destroy()
