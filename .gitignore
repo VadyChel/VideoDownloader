@@ -142,3 +142,6 @@ cython_debug/
 
 # Logo
 logo.ico
+
+# Build file
+exe.py
