@@ -139,3 +139,6 @@ cython_debug/
 
 # Ffmpeg
 /ffmpeg
+
+# Logo
+logo.ico

@@ -39,7 +39,7 @@ class VideoDownloader:
 	def create_app(self) -> None:
 		self.window.title("VideoDownloader")
 		self.window.iconbitmap(
-			os.path.dirname(os.path.abspath(__file__)) + "/resources/img/logo.ico"
+			os.path.dirname(os.path.abspath(__file__)) + "/logo.ico"
 		)
 		self.window.geometry("750x350")
 		self.window.resizable(width=False, height=False)
