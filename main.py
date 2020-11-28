@@ -167,11 +167,10 @@ class VideoDownloader:
 
 		captions = [c.name for c in self.yt.captions]
 		captions.insert(0, "None")
-		captions.insert(1, "All")
 		self.caption_combo["values"] = captions
 		self.caption_combo.current(0)
 		self.caption_combo.bind("<<ComboboxSelected>>", self.set_caption)
-		self.caption_lang = captions[0]
+		self.caption = captions[0]
 
 		self.format_combo["values"] = ("mp4", "mkv", "avi")
 		self.format_combo.current(0)
@@ -222,6 +221,9 @@ class VideoDownloader:
 			res=self.video_resolution,
 			only_video=True,
 		).first()
+		self.video_title_without_symbols = re.sub(
+			"[^\w\-_\. ]", "", self.current_video.title
+		)
 
 	def get_audio_stream(self) -> None:
 		self.current_audio = self.yt.streams.filter(
@@ -283,6 +285,23 @@ class VideoDownloader:
 		self.current_stream = self.current_video
 		self.current_video.download(filename="Video", output_path=self.save_directory)
 
+		if self.caption != "None":
+			self.downloading_info.configure(text="Caption upload")
+			self.save_directory += f"/{self.video_title_without_symbols}"
+			try:
+				os.mkdir(self.save_directory)
+			except OSError:
+				pass
+			with open(
+				self.save_directory + "/" + self.video_title_without_symbols + ".srt",
+				"w",
+				encoding="utf-8",
+			) as f:
+				for caption in self.yt.captions:
+					if caption.name == self.caption:
+						f.write(caption.generate_srt_captions())
+						break
+
 	def download_audio(self) -> None:
 		self.downloading_info.configure(text="Audio upload")
 
@@ -307,16 +326,15 @@ class VideoDownloader:
 		self.stop_concatenating = True
 		Thread(target=self.concatenating_streams_proggress).start()
 
-		video_title = re.sub("[^\w\-_\. ]", "", self.current_video.title)
+		video_title = self.video_title_without_symbols
 		video_path = self.save_directory + "/Video." + self.current_video.subtype
 		audio_path = self.save_directory + "/Audio." + self.current_audio.subtype
 
 		for f in os.listdir(self.save_directory):
-			if len(list(f[:-4])) > 1:
-				if list(f[:-4])[::-1][0] == ")":
-					num = int(list(f[:-4])[::-1][1]) + 1
-					video_title += f"""({num})"""
-					break
+			if f[:-4].endswith(")"):
+				num = int(list(f[:-4])[::-1][1]) + 1
+				video_title += f"""({num})"""
+				break
 
 			if f == video_title + ".mp4":
 				video_title += "(1)"
@@ -359,9 +377,9 @@ class VideoDownloader:
 		ctrl = (event.state & 0x4) != 0
 		if event.keycode == 65 and ctrl and event.keysym.lower() != "a":
 			event.widget.event_generate("<<SelectAll>>")
-		elif event.keycode == 88 and ctrl and event.keysym.lower() != "x": 
+		elif event.keycode == 88 and ctrl and event.keysym.lower() != "x":
 			event.widget.event_generate("<<Cut>>")
-		elif event.keycode == 86 and ctrl and event.keysym.lower() != "v": 
+		elif event.keycode == 86 and ctrl and event.keysym.lower() != "v":
 			event.widget.event_generate("<<Paste>>")
 		elif event.keycode == 67 and ctrl and event.keysym.lower() != "c":
 			event.widget.event_generate("<<Copy>>")
