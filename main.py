@@ -39,9 +39,7 @@ class VideoDownloader:
 
 	def create_app(self) -> None:
 		self.window.title("VideoDownloader")
-		self.window.iconbitmap(
-			os.path.dirname(os.path.abspath(__file__)) + "/logo.ico"
-		)
+		self.window.iconbitmap(os.path.dirname(os.path.abspath(__file__)) + "/logo.ico")
 		self.window.geometry("750x350")
 		self.window.resizable(width=False, height=False)
 
@@ -109,8 +107,8 @@ class VideoDownloader:
 		)
 		self.video_title.place(x=10, y=290, width=440, height=40)
 		self.title_tooltip = ToolTip(self.video_title)
-		self.video_title.bind('<Enter>', self.show_full_title)
-		self.video_title.bind('<Leave>', self.remove_full_title)
+		self.video_title.bind("<Enter>", self.show_full_title)
+		self.video_title.bind("<Leave>", self.remove_full_title)
 
 		video_thumbnail = self.get_video_thumbnail()
 		self.video_icon = Label(image=video_thumbnail)
@@ -122,7 +120,7 @@ class VideoDownloader:
 
 		self.progress_text = Label(self.window, text=str(self.progress) + "%")
 		self.progress_text.place(x=700, y=245, width=35, height=25)
-		
+
 		self.save_directory_text = Label(self.window, text=self.save_directory)
 		self.save_directory_text.place(x=360, y=70, width=275, height=30)
 
@@ -157,7 +155,7 @@ class VideoDownloader:
 			style="DownloadButton.TButton",
 		)
 		self.download_btn.place(x=605, y=290, width=130, height=40)
-	
+
 	def configure_combos(self):
 		resolutions = self.get_video_resolutions()
 		self.resolution_combo["values"] = resolutions
@@ -275,7 +273,7 @@ class VideoDownloader:
 		self.pause_btn.place(x=605, y=290, width=130, height=40)
 
 		self.create_streams_thread()
-		
+
 	def download_video(self) -> None:
 		self.start_time = datetime.datetime.now()
 		self.downloading_info.configure(text="Video upload")
@@ -379,6 +377,7 @@ class VideoDownloader:
 
 	def kill_thread(self) -> None:
 		self.thread.terminate()
+
 
 if __name__ == "__main__":
 	root = Tk()
