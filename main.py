@@ -12,7 +12,7 @@ from PIL import Image as PIL_IMAGE, ImageTk
 from threading import Thread
 from pytube import *
 from tkinter import Tk
-from tkinter.filedialog import *
+from tkinter.filedialog import askdirectory
 from tkinter.ttk import *
 
 
@@ -20,6 +20,7 @@ class VideoDownloader:
 	def __init__(self, window):
 		self.window = window
 		self.progress = 0
+		self.key = None
 		self.current_stream = None
 		self.current_video = None
 		self.current_audio = None
@@ -88,6 +89,7 @@ class VideoDownloader:
 	def create_gui(self) -> None:
 		self.url_sender = Entry(self.window, style="UrlSender.TEntry")
 		self.url_sender.place(x=10, y=10, width=580, height=40)
+		self.url_sender.bind_all("<Key>", self.keys_bind, "+")
 
 		self.search_btn = Button(
 			self.window,
@@ -352,6 +354,17 @@ class VideoDownloader:
 	def create_streams_thread(self) -> None:
 		self.thread = Thread(target=self.download_streams)
 		self.thread.start()
+
+	def keys_bind(self, event):
+		ctrl = (event.state & 0x4) != 0
+		if event.keycode == 65 and ctrl and event.keysym.lower() != "a":
+			event.widget.event_generate("<<SelectAll>>")
+		elif event.keycode == 88 and ctrl and event.keysym.lower() != "x": 
+			event.widget.event_generate("<<Cut>>")
+		elif event.keycode == 86 and ctrl and event.keysym.lower() != "v": 
+			event.widget.event_generate("<<Paste>>")
+		elif event.keycode == 67 and ctrl and event.keysym.lower() != "c":
+			event.widget.event_generate("<<Copy>>")
 
 	def stop_download(self) -> None:
 		self.stop_download = False
