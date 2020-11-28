@@ -280,11 +280,6 @@ class VideoDownloader:
 
 	def download_video(self) -> None:
 		self.start_time = datetime.datetime.now()
-		self.downloading_info.configure(text="Video upload")
-
-		self.current_stream = self.current_video
-		self.current_video.download(filename="Video", output_path=self.save_directory)
-
 		if self.caption != "None":
 			self.downloading_info.configure(text="Caption upload")
 			self.save_directory += f"/{self.video_title_without_symbols}"
@@ -301,6 +296,11 @@ class VideoDownloader:
 					if caption.name == self.caption:
 						f.write(caption.generate_srt_captions())
 						break
+		
+		self.downloading_info.configure(text="Video upload")
+
+		self.current_stream = self.current_video
+		self.current_video.download(filename="Video", output_path=self.save_directory)
 
 	def download_audio(self) -> None:
 		self.downloading_info.configure(text="Audio upload")
