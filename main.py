@@ -5,6 +5,7 @@ import requests
 import datetime
 import ctypes
 import subprocess
+from tooltip import ToolTip
 from hurry.filesize import size
 from tkinter.font import Font
 from PIL import Image as PIL_IMAGE, ImageTk
@@ -107,6 +108,9 @@ class VideoDownloader:
 			style="VideoTitle.TLabel",
 		)
 		self.video_title.place(x=10, y=290, width=440, height=40)
+		self.title_tooltip = ToolTip(self.video_title)
+		self.video_title.bind('<Enter>', self.show_full_title)
+		self.video_title.bind('<Leave>', self.remove_full_title)
 
 		video_thumbnail = self.get_video_thumbnail()
 		self.video_icon = Label(image=video_thumbnail)
@@ -354,6 +358,12 @@ class VideoDownloader:
 	def stop_download(self) -> None:
 		self.stop_download = False
 
+	def show_full_title(self, event):
+		self.title_tooltip.showtip(self.yt.title)
+
+	def remove_full_title(self, event):
+		self.title_tooltip.hidetip()
+
 	def remove_combos(self) -> None:
 		self.resolution_combo_info.destroy()
 		self.format_combo_info.destroy()
@@ -369,7 +379,6 @@ class VideoDownloader:
 
 	def kill_thread(self) -> None:
 		self.thread.terminate()
-
 
 if __name__ == "__main__":
 	root = Tk()
