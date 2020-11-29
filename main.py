@@ -36,9 +36,19 @@ class VideoDownloader:
 		self.finish_time = 0
 		self.stop_concatenating = False
 
-		self.create_app()
+		self.create_window()
 
-	def create_app(self) -> None:
+	def check_ffmpeg_env_var(self) -> None:
+		state = False
+		for path in os.environ.get("PATH").split(";"):
+			if "ffmpeg" in path.split("\\"):
+				state = True
+
+		if not state:
+			print("not")
+			os.environ["PATH"] = os.environ["PATH"]+f";{os.path.dirname(os.path.abspath(__file__))}\\ffmpeg\\bin"
+
+	def create_window(self) -> None:
 		self.window.title("VideoDownloader")
 		self.window.iconbitmap(os.path.dirname(os.path.abspath(__file__)) + "/logo.ico")
 		self.window.geometry("750x350")
