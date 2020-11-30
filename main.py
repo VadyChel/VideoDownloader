@@ -38,16 +38,6 @@ class VideoDownloader:
 
 		self.create_window()
 
-	def check_ffmpeg_env_var(self) -> None:
-		state = False
-		for path in os.environ.get("PATH").split(";"):
-			if "ffmpeg" in path.split("\\"):
-				state = True
-
-		if not state:
-			print("not")
-			os.environ["PATH"] = os.environ["PATH"]+f";{os.path.dirname(os.path.abspath(__file__))}\\ffmpeg\\bin"
-
 	def create_window(self) -> None:
 		self.window.title("VideoDownloader")
 		self.window.iconbitmap(os.path.dirname(os.path.abspath(__file__)) + "/logo.ico")
@@ -351,9 +341,10 @@ class VideoDownloader:
 				break
 
 		output_path = self.save_directory + f"/{video_title}." + self.video_format
-
+		ffmpeg_path = "\""+os.path.dirname(os.path.abspath(__file__))+"\\ffmpeg.exe"+"\""
+		
 		command = (
-			f"""ffmpeg -i "{video_path}" -i "{audio_path}" -c copy "{output_path}" """
+			f"""{ffmpeg_path} -i "{video_path}" -i "{audio_path}" -c copy "{output_path}" """
 		)
 		subprocess.run(command)
 
