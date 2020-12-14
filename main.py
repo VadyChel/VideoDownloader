@@ -3,11 +3,9 @@ import re
 import time
 import requests
 import datetime
-import ctypes
 import subprocess
 from tooltip import ToolTip
 from hurry.filesize import size
-from tkinter.font import Font
 from PIL import Image as PIL_IMAGE, ImageTk
 from threading import Thread
 from pytube import *
@@ -40,7 +38,7 @@ class VideoDownloader:
 
 	def create_window(self) -> None:
 		self.window.title("VideoDownloader")
-		self.window.iconbitmap(os.path.dirname(os.path.abspath(__file__)) + "/logo.ico")
+		self.window.iconbitmap(os.path.dirname(os.path.abspath(__file__)) + "/icon.ico")
 		self.window.geometry("750x350")
 		self.window.resizable(width=False, height=False)
 
@@ -68,7 +66,7 @@ class VideoDownloader:
 
 	def show_progress_bar(
 		self, stream: Stream, chunk: int, bytes_remaining: int
-	) -> int:
+	) -> None:
 		self.downloaded_filesize.configure(
 			text=f"{size(int(self.current_stream.filesize))}/{size(int(self.current_stream.filesize - bytes_remaining))}"
 		)

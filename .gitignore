@@ -145,3 +145,5 @@ logo.ico
 
 # Build file
 exe.py
+
+.idea/
