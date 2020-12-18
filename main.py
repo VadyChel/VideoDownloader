@@ -22,6 +22,8 @@ class VideoDownloader:
 		self.current_stream = None
 		self.current_video = None
 		self.current_audio = None
+		self.to_upload_video = False
+		self.to_upload_audio = False
 		self.thread = None
 		self.save_directory = (
 			os.environ.get("USERPROFILE") or os.environ.get("HOME")
@@ -170,7 +172,7 @@ class VideoDownloader:
 		self.caption_combo.bind("<<ComboboxSelected>>", self.set_caption)
 		self.caption = captions[0]
 
-		self.format_combo["values"] = ("mp4", "mkv", "avi")
+		self.format_combo["values"] = ("mp4", "mkv", "avi", "only audio", "only video")
 		self.format_combo.current(0)
 		self.format_combo.bind("<<ComboboxSelected>>", self.set_video_format)
 		self.video_format = "mp4"
@@ -182,7 +184,15 @@ class VideoDownloader:
 		self.caption = self.caption_combo.get()
 
 	def set_video_format(self, event) -> None:
-		self.video_format = self.format_combo.get()
+		if self.format_combo.get() == "only audio":
+			self.to_upload_audio = True
+		elif self.format_combo.get() == "only video":
+			self.to_upload_video = True
+			self.video_format = self.format_combo.get()
+		else:
+			self.to_upload_video = True
+			self.to_upload_audio = True
+			self.video_format = self.format_combo.get()
 
 	def set_save_directory(self) -> None:
 		save_directory = askdirectory()
@@ -277,7 +287,6 @@ class VideoDownloader:
 		self.create_streams_thread()
 
 	def download_video(self) -> None:
-		self.start_time = datetime.datetime.now()
 		if self.caption != "None":
 			self.downloading_info.configure(text="Caption upload")
 			self.save_directory += f"/{self.video_title_without_symbols}"
@@ -298,25 +307,16 @@ class VideoDownloader:
 		self.downloading_info.configure(text="Video upload")
 
 		self.current_stream = self.current_video
-		self.current_video.download(filename="Video", output_path=self.save_directory)
+		self.current_video.download(filename=self.video_title_without_symbols+"-Video", output_path=self.save_directory)
 
 	def download_audio(self) -> None:
 		self.downloading_info.configure(text="Audio upload")
 
 		self.current_stream = self.current_audio
-		self.current_audio.download(filename="Audio", output_path=self.save_directory)
+		self.current_audio.download(filename=self.video_title_without_symbols+"-Audio", output_path=self.save_directory)
 
-		self.connect_streams()
-		self.finish_time = datetime.datetime.now()
-
-		seconds = (self.finish_time - self.start_time).seconds
-		uploading_time = (
-			str(round(seconds % 3600 / 60.0)) + "m"
-			if seconds % 3600 / 60.0 > 1
-			else str(round(seconds)) + "s"
-		)
-
-		self.downloading_info.configure(text=f"Uploaded in {uploading_time}")
+		if self.to_upload_video and self.to_upload_audio:
+			self.connect_streams()
 
 	def connect_streams(self) -> None:
 		self.downloading_info.configure(text="Concatenating streams")
@@ -365,8 +365,23 @@ class VideoDownloader:
 		self.progress_text.configure(text="100%")
 
 	def download_streams(self) -> None:
-		self.download_video()
-		self.download_audio()
+		self.start_time = datetime.datetime.now()
+		if self.to_upload_video:
+			self.download_video()
+
+		if self.to_upload_audio:
+			self.download_audio()
+
+		self.finish_time = datetime.datetime.now()
+
+		seconds = (self.finish_time - self.start_time).seconds
+		uploading_time = (
+			str(round(seconds % 3600 / 60.0)) + "m"
+			if seconds % 3600 / 60.0 > 1
+			else str(round(seconds)) + "s"
+		)
+
+		self.downloading_info.configure(text=f"Uploaded in {uploading_time}")
 
 	def create_streams_thread(self) -> None:
 		self.thread = Thread(target=self.download_streams)
