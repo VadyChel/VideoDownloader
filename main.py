@@ -9,7 +9,7 @@ from hurry.filesize import size
 from PIL import Image as PIL_IMAGE, ImageTk
 from threading import Thread
 from pytube import *
-from tkinter import Tk
+from tkinter import Tk, messagebox
 from tkinter.filedialog import askdirectory
 from tkinter.ttk import *
 
@@ -79,8 +79,15 @@ class VideoDownloader:
 			self.progress_bar["value"] = self.progress
 
 	def clicked(self) -> None:
-		self.yt = YouTube(self.url_sender.get())
+		try:
+			self.yt = YouTube(self.url_sender.get())
+		except:
+			messagebox.showerror("Error", "Was provided an invalid url")
 		self.yt.register_on_progress_callback(self.show_progress_bar)
+		if len(self.yt.streams) <= 0:
+			messagebox.showerror("Error", "Don't find anything streams")
+			self.remove_all_widgets()
+			self.create_gui()
 
 		self.remove_all_widgets()
 		self.create_gui()
